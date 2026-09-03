@@ -29,7 +29,12 @@ const install = () =>
   Effect.gen(function*() {
     const shell = yield* Shell
     const workspace = yield* Workspace
-    yield* shell.exec("yarn", ["install", "--inline-builds"], { cwd: workspace.root })
+    // The worker mounts the benchmark cache volume at /cache. Persisting the
+    // yarn fetch cache is what separates a warm run from a cold one.
+    yield* shell.exec("yarn", ["install", "--inline-builds"], {
+      cwd: workspace.root,
+      env: { YARN_ENABLE_GLOBAL_CACHE: "true", YARN_GLOBAL_FOLDER: "/cache/yarn" }
+    })
   })
 
 const Prepare = Job.define({
@@ -103,7 +108,7 @@ const TypeCheck = Job.define({
       // check-types.yml allows a 12 GB Node heap for the type check.
       yield* shell.exec("yarn", ["type-check:ci"], {
         cwd: workspace.root,
-        env: { NODE_OPTIONS: "--max-old-space-size=12288" }
+        env: { NODE_OPTIONS: "--max-old-space-size=5120" }
       })
       return { name: "type-check", passed: true }
     })
@@ -147,7 +152,7 @@ const ApiV2UnitTests = Job.define({
       // api-v2-unit-tests.yml builds the platform libraries before running tests.
       yield* shell.exec("yarn", ["workspace", "@calcom/platform-libraries", "build"], {
         cwd: workspace.root,
-        env: { NODE_OPTIONS: "--max_old_space_size=8192" }
+        env: { NODE_OPTIONS: "--max_old_space_size=3072" }
       })
       yield* shell.exec("yarn", ["test"], { cwd: workspace.root })
       return { name: "api-v2-unit", passed: true }
