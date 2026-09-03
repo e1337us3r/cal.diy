@@ -221,7 +221,7 @@ export default Pipeline.define({
           apiV2Unit: Job.execute(ApiV2UnitTests, {}),
           security: Job.execute(SecurityAudit, {})
         },
-        { concurrency: 2, mode: "result" }
+        { concurrency: 1, mode: "result" }
       )
       yield* Pipeline.requireAll(checks)
 
