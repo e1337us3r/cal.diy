@@ -20,7 +20,6 @@ import { Effect, Job, Pipeline, Schema, Shell, Workspace } from "@karinja/sdk"
 import { GitHubClient } from "@karinja/provider-github"
 
 const ChangeEvent = Schema.Struct({
-  _tag: Schema.Literal("ChangeRequest"),
   provider: Schema.Literal("github"),
   repository: Schema.Struct({ owner: Schema.String, name: Schema.String }),
   base: Schema.Struct({ ref: Schema.String, sha: Schema.String }),
